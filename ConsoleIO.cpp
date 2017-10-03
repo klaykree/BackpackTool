@@ -1,6 +1,6 @@
 #include "ConsoleIO.h"
 #include <iostream>
-#include "conio.h"
+#include <wchar.h> //_getwch()
 
 ConsoleIO::ConsoleIO()
 {
@@ -15,7 +15,10 @@ ConsoleIO::ConsoleIO()
 	_InputThread = std::make_unique<std::thread>(&ConsoleIO::InputLoop, this);
 }
 
-ConsoleIO::~ConsoleIO() {}
+ConsoleIO::~ConsoleIO()
+{
+	_InputThread->join();
+}
 
 void ConsoleIO::Print(std::wstring Text)
 {

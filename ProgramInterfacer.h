@@ -15,7 +15,7 @@ public:
     ProgramInterfacer(ConsoleIO& Console, HwInput& Input);
     ~ProgramInterfacer();
     
-    void OpenFileDialog(std::wstring Params);
+	void StartFileDialog(std::wstring Params);
     
     void AttachToProcess();
 
@@ -34,7 +34,7 @@ private:
 		bool Searchable; //Flag to use or ignore the Byte
 	};
 
-    void _ProcessLoop(std::wstring& FileName);
+	void _OpenFileDialog(std::wstring Params);
 	LPVOID _FindFunctionLocation(LPCVOID StartAddress);
 	void _SetPauseBreakpoint(HANDLE Thread, DWORD BreakpointAddressOffset);
 	void _RemovePauseBreakpoint(HANDLE Thread);

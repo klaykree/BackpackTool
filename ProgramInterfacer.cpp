@@ -13,8 +13,8 @@ ProgramInterfacer::ProgramInterfacer(ConsoleIO& Console, HwInput& Input)
 {
 	FunctionCallback OpenCB;
 	OpenCB.FunctionDescription = L"Opens game";
-	OpenCB.Callback = std::bind(&ProgramInterfacer::OpenFileDialog, this, std::placeholders::_1);
-	Console.RegisterCallback({ L"st", OpenCB });
+	OpenCB.Callback = std::bind(&ProgramInterfacer::StartFileDialog, this, std::placeholders::_1);
+	Console.RegisterCallback({ L"start game", OpenCB });
 
 	FunctionCallback PauseCB;
 	PauseCB.FunctionDescription = L"Pauses selected process";
@@ -27,7 +27,12 @@ ProgramInterfacer::ProgramInterfacer(ConsoleIO& Console, HwInput& Input)
 ProgramInterfacer::~ProgramInterfacer()
 {}
 
-void ProgramInterfacer::OpenFileDialog(std::wstring Params)
+void ProgramInterfacer::StartFileDialog(std::wstring Params)
+{
+	_ProcessThreadLoop = std::make_unique<std::thread>(&ProgramInterfacer::_OpenFileDialog, this, Params);
+}
+
+void ProgramInterfacer::_OpenFileDialog(std::wstring Params)
 {
 	OPENFILENAMEW FileInfo = {}; //Init stuct to zero
     FileInfo.lStructSize = sizeof(FileInfo);
@@ -35,7 +40,7 @@ void ProgramInterfacer::OpenFileDialog(std::wstring Params)
 	std::wstring FileName(260, 0);
 	FileInfo.lpstrFile = &FileName[0];
 	FileInfo.nMaxFile = static_cast<DWORD>(FileName.size());
-	FileInfo.lpstrFilter = L"Program\0*.exe;*.bat;*.lnk\0";
+	FileInfo.lpstrFilter = L"Program\0*.exe;*.bat;*.lnk\0"; //Can open executable, batch, and link files
 	FileInfo.nFilterIndex = 1;
 	FileInfo.lpstrFileTitle = NULL;
 	FileInfo.nMaxFileTitle = 0;
@@ -47,8 +52,6 @@ void ProgramInterfacer::OpenFileDialog(std::wstring Params)
     {
 		_Console.Print(L"Starting process...");
 		size_t FileDirNameLength = FileName.find(L'\0') + 1; //Find first null to get actual directory length
-		//_ProcessThreadLoop = std::make_unique<std::thread>(&ProgramInterfacer::_ProcessLoop, this, FileName.substr(0, FileDirNameLength));
-		//_ProcessLoop(FileName.substr(0, FileDirNameLength));
 
 		STARTUPINFOW StartInfo = {};
 		PROCESS_INFORMATION ProcessInfo = {};
@@ -64,133 +67,6 @@ void ProgramInterfacer::OpenFileDialog(std::wstring Params)
 	{
 		_Console.Print(L"No process started");
 	}
-}
-
-void ProgramInterfacer::_ProcessLoop(std::wstring& FileName)
-{
-	STARTUPINFOW StartInfo = {};
-	PROCESS_INFORMATION ProcessInfo = {};
-	StartInfo.cb = sizeof(StartInfo);
-
-	BOOL ProcessCreated = CreateProcessW(FileName.c_str(), NULL, NULL, NULL, TRUE, DEBUG_ONLY_THIS_PROCESS, NULL, NULL, &StartInfo, &ProcessInfo);
-
-	_ProcessThreadHandle = ProcessInfo.hThread;
-	_ProcessThreadID = ProcessInfo.dwThreadId;
-
-	//AttachToProcess(ProcessInfo.dwProcessId);
-
-	_ProcessHandle = ProcessInfo.hProcess;
-	_ProcessID = ProcessInfo.dwProcessId;
-
-	if(ProcessCreated)
-	{
-		_Console.Print(L"Started " + FileName);
-
-		//std::unordered_map<LPVOID, std::wstring> Dlls;
-
-		bool FirstException = true;
-
-		//auto PauseTimer = std::chrono::high_resolution_clock::now();;
-
-		/*uint8_t Int3 = 0xCC; //Breakpoint
-		WriteProcessMemory(_ProcessHandle, _DxPresentCallLocation, &Int3, 1, NULL);
-		FlushInstructionCache(_ProcessHandle, _DxPresentCallLocation, 1);
-		_Paused = true;*/
-
-		int HitCount = 0;
-
-		DEBUG_EVENT DebugEvent = {};
-		while(true)
-		{
-			while(WaitForDebugEvent(&DebugEvent, INFINITE))
-			{
-				if(DebugEvent.dwDebugEventCode == EXCEPTION_DEBUG_EVENT)
-				{
-					if(FirstException)
-					{
-						FirstException = false;
-						//uint8_t Int3 = 0xCC; //Breakpoint
-						//BOOL Success = WriteProcessMemory(_ProcessHandle, _DxPresentCallLocation, &Int3, 1, NULL);
-						//Success = FlushInstructionCache(_ProcessHandle, _DxPresentCallLocation, 1);
-
-						//_Console->Print(L"PAUSE");
-						//_Pause();
-					}
-					else
-					{
-						/*if(_DxPresentCallLocation == DebugEvent.u.Exception.ExceptionRecord.ExceptionAddress ||
-							_DxPresentCallLocation == (char*)DebugEvent.u.Exception.ExceptionRecord.ExceptionAddress - 1)*/
-						{
-							//if(_Paused)
-							{
-								if(HitCount < 60 * 3)
-								{
-									_Paused = true;
-									++HitCount;
-									std::vector<uint8_t> FunctionSignature = { 0x6A, 0x01, 0x6A, 0x01, 0x50, 0x6A, 0x05, 0x51, 0x57, 0x52, 0xE8, 0xA2, 0x33 };
-									std::vector<uint8_t> Buffer(16);
-									ReadProcessMemory(_ProcessHandle, (LPVOID)((char*)_DxPresentCallLocation), &Buffer[0], 16, NULL);
-									CONTEXT lcContext;
-									lcContext.ContextFlags = CONTEXT_ALL;
-									GetThreadContext(_ProcessThreadHandle, &lcContext);
-									//std::this_thread::sleep_for(std::chrono::milliseconds(10));
-									_Console.Print(L"UNPAUSE");
-									Unpause();
-									_Console.Print(L"PAUSE");
-									//Pause();
-									ReadProcessMemory(_ProcessHandle, (LPVOID)((char*)_DxPresentCallLocation), &Buffer[0], 16, NULL);
-									GetThreadContext(_ProcessThreadHandle, &lcContext);
-								}
-								else
-								{
-									if(_Paused)
-									{
-										_Paused = false;
-										_Console.Print(L"UNPAUSE");
-										Unpause();
-									}
-								}
-							}
-						}
-					}
-
-					//ContinueDebugEvent(DebugEvent.dwProcessId, DebugEvent.dwThreadId, DBG_EXCEPTION_HANDLED);
-				}
-				else if(DebugEvent.dwDebugEventCode == CREATE_PROCESS_DEBUG_EVENT)
-				{
-					std::wstring FilePath(260, 0);
-					auto PathLength = GetFinalPathNameByHandleW(DebugEvent.u.CreateProcessInfo.hFile, &FilePath[0], 260, VOLUME_NAME_NT);
-					_Console.Print(L"Process created: " + FilePath.substr(0, PathLength));
-
-					//_Console->Print(L"PAUSE");
-					//_Pause();
-				}
-				/*else if(DebugEvent.dwDebugEventCode == LOAD_DLL_DEBUG_EVENT)
-				{
-					auto DllInfo = DebugEvent.u.LoadDll;
-					std::wstring DllPath(260, 0);
-					auto PathLength = GetFinalPathNameByHandleW(DllInfo.hFile, &DllPath[0], 260, VOLUME_NAME_NONE);
-					std::wstring DllName = DllPath.substr(0, PathLength);
-					_Console->Print(L"DLL loaded: " + DllName);
-
-					Dlls[DllInfo.lpBaseOfDll] = DllName;
-				}
-				else if(DebugEvent.dwDebugEventCode == LOAD_DLL_DEBUG_EVENT)
-				{
-					_Console->Print(L"DLL unloaded: " + Dlls[DebugEvent.u.UnloadDll.lpBaseOfDll]);
-				}*/
-
-				ContinueDebugEvent(DebugEvent.dwProcessId, DebugEvent.dwThreadId, DBG_CONTINUE);
-			}
-		}
-	}
-	else
-	{
-		_Console.Print(L"Failed to start " + FileName);
-	}
-
-	CloseHandle(ProcessInfo.hProcess);
-	CloseHandle(ProcessInfo.hThread);
 }
 
 HMODULE ProgramInterfacer::_GetBaseAddress(HANDLE Handle)
