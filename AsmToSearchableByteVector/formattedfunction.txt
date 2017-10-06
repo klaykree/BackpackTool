@@ -1,0 +1,44 @@
+{
+	{ 0x6A, true }, { 0x18, true }, //PUSH 18
+	{ 0xB8, true }, { 0x0A, true }, { 0x61, true }, { 0x1F, true }, { 0x72, true }, //MOV EAX,d3d9.721F610A
+	{ 0xE8, true }, { 0x25, true }, { 0xC2, true }, { 0x01, true }, { 0x00, true }, //CALL d3d9.721F4081
+	{ 0x8B, true }, { 0x7D, true }, { 0x08, true }, //MOV EDI,DWORD PTR SS:[EBP+8]
+	{ 0x8B, true }, { 0xDF, true }, //MOV EBX,EDI
+	{ 0x8D, true }, { 0x47, true }, { 0x04, true }, //LEA EAX,DWORD PTR DS:[EDI+4]
+	{ 0xF7, true }, { 0xDB, true }, //NEG EBX
+	{ 0x1B, true }, { 0xDB, true }, //SBB EBX,EBX
+	{ 0x23, true }, { 0xD8, true }, //AND EBX,EAX
+	{ 0x89, true }, { 0x5D, true }, { 0xE0, true }, //MOV DWORD PTR SS:[EBP-20],EBX
+	{ 0x33, true }, { 0xF6, true }, //XOR ESI,ESI
+	{ 0x89, true }, { 0x75, true }, { 0xE4, true }, //MOV DWORD PTR SS:[EBP-1C],ESI
+	{ 0x39, true }, { 0x73, true }, { 0x18, true }, //CMP DWORD PTR DS:[EBX+18],ESI
+	{ 0x75, true }, { 0x73, true }, //JNZ SHORT d3d9.721D7EEA
+	{ 0x89, true }, { 0x75, true }, { 0xFC, true }, //MOV DWORD PTR SS:[EBP-4],ESI
+	{ 0xF7, true }, { 0x47, true }, { 0x2C, true }, { 0x02, true }, { 0x00, true }, { 0x00, true }, { 0x00, true }, //TEST DWORD PTR DS:[EDI+2C],2
+	{ 0x0F, true }, { 0x85, true }, { 0xA4, true }, { 0x46, true }, { 0x04, true }, { 0x00, true }, //JNZ d3d9.7221C52B
+	{ 0xC6, true }, { 0x45, true }, { 0xFC, true }, { 0x01, true }, //MOV BYTE PTR SS:[EBP-4],1
+	{ 0x8B, true }, { 0x87, true }, { 0x8C, true }, { 0x2C, true }, { 0x00, true }, { 0x00, true }, //MOV EAX,DWORD PTR DS:[EDI+2C8C]
+	{ 0xA8, true }, { 0x01, true }, //TEST AL,1
+	{ 0x0F, true }, { 0x84, true }, { 0x77, true }, { 0x46, true }, { 0x04, true }, { 0x00, true }, //JE d3d9.7221C510
+	{ 0xF6, true }, { 0x87, true }, { 0x88, true }, { 0x2C, true }, { 0x00, true }, { 0x00, true }, { 0x04, true }, //TEST BYTE PTR DS:[EDI+2C88],4
+	{ 0x0F, true }, { 0x85, true }, { 0x9F, true }, { 0x46, true }, { 0x04, true }, { 0x00, true }, //JNZ d3d9.7221C545
+	{ 0x83, true }, { 0xE0, true }, { 0xFE, true }, //AND EAX,FFFFFFFE
+	{ 0x89, true }, { 0x87, true }, { 0x8C, true }, { 0x2C, true }, { 0x00, true }, { 0x00, true }, //MOV DWORD PTR DS:[EDI+2C8C],EAX
+	{ 0x8B, true }, { 0xBF, true }, { 0x98, true }, { 0x2C, true }, { 0x00, true }, { 0x00, true }, //MOV EDI,DWORD PTR DS:[EDI+2C98]
+	{ 0x89, true }, { 0xB7, true }, { 0xC0, true }, { 0x00, true }, { 0x00, true }, { 0x00, true }, //MOV DWORD PTR DS:[EDI+C0],ESI
+	{ 0x8B, true }, { 0x07, true }, //MOV EAX,DWORD PTR DS:[EDI]
+	{ 0x56, true }, //PUSH ESI
+	{ 0x8B, true }, { 0x70, true }, { 0x4C, true }, //MOV ESI,DWORD PTR DS:[EAX+4C]
+	{ 0x8B, true }, { 0xCE, true }, //MOV ECX,ESI
+	{ 0xFF, true }, { 0x15, true }, { 0x74, true }, { 0xF6, true }, { 0x2C, true }, { 0x72, true }, //CALL DWORD PTR DS:[722CF674]             ; d3d9.721E86C0
+	{ 0x8B, true }, { 0xCF, true }, //MOV ECX,EDI
+	{ 0xFF, true }, { 0xD6, true }, //CALL ESI
+	{ 0x8B, true }, { 0x4D, true }, { 0x08, true }, //MOV ECX,DWORD PTR SS:[EBP+8]
+	{ 0x8B, true }, { 0x41, true }, { 0x3C, true }, //MOV EAX,DWORD PTR DS:[ECX+3C]
+	{ 0xFF, true }, { 0x40, true }, { 0x08, true }, //INC DWORD PTR DS:[EAX+8]
+	{ 0x83, true }, { 0x4D, true }, { 0xFC, true }, { 0xFF, true }, //OR DWORD PTR SS:[EBP-4],FFFFFFFF
+	{ 0x83, true }, { 0x7B, true }, { 0x18, true }, { 0x00, true }, //CMP DWORD PTR DS:[EBX+18],0
+	{ 0x75, true }, { 0x13, true }, //JNZ SHORT d3d9.721D7EF3
+	{ 0x33, true }, { 0xC0, true }, //XOR EAX,EAX
+	{ 0xE8, true }, { 0xEC, true }, { 0xC0, true }, { 0x01, true }, { 0x00, true }, //CALL d3d9.721F3FD3
+	{ 0xC2, true }, { 0x04, true }, { 0x00, true }, //RETN 4};

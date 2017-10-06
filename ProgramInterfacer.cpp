@@ -6,8 +6,6 @@
 #include <Psapi.h>
 #include <unordered_map>
 
-#pragma warning (disable: 4996)
-
 ProgramInterfacer::ProgramInterfacer(ConsoleIO& Console, HwInput& Input)
 	:_Console(Console), _Input(Input)
 {
@@ -210,6 +208,53 @@ LPVOID ProgramInterfacer::_FindFunctionLocation(LPCVOID StartAddress)
 
 	std::vector<SearchableByte> FunctionSignature =
 	{
+		{ 0x6A, true }, { 0x18, true },																							//PUSH 18
+		{ 0xB8, true }, { 0x0A, false }, { 0x61, false }, { 0x1F, false }, { 0x72, false },										//MOV EAX,d3d9.721F610A
+		{ 0xE8, true }, { 0x25, false }, { 0xC2, false }, { 0x01, false }, { 0x00, false },										//CALL d3d9.721F4081
+		{ 0x8B, true }, { 0x7D, false }, { 0x08, false },																		//MOV EDI,DWORD PTR SS:[EBP+8]
+		{ 0x8B, true }, { 0xDF, true },																							//MOV EBX,EDI
+		{ 0x8D, true }, { 0x47, false }, { 0x04, false },																		//LEA EAX,DWORD PTR DS:[EDI+4]
+		{ 0xF7, true }, { 0xDB, true },																							//NEG EBX
+		{ 0x1B, true }, { 0xDB, true },																							//SBB EBX,EBX
+		{ 0x23, true }, { 0xD8, true },																							//AND EBX,EAX
+		{ 0x89, true }, { 0x5D, false }, { 0xE0, false },																		//MOV DWORD PTR SS:[EBP-20],EBX
+		{ 0x33, true }, { 0xF6, true },																							//XOR ESI,ESI
+		{ 0x89, true }, { 0x75, false }, { 0xE4, false },																		//MOV DWORD PTR SS:[EBP-1C],ESI
+		{ 0x39, true }, { 0x73, false }, { 0x18, false },																		//CMP DWORD PTR DS:[EBX+18],ESI
+		{ 0x75, true }, { 0x73, false },																						//JNZ SHORT d3d9.721D7EEA
+		{ 0x89, true }, { 0x75, false }, { 0xFC, false },																		//MOV DWORD PTR SS:[EBP-4],ESI
+		{ 0xF7, true }, { 0x47, false }, { 0x2C, false }, { 0x02, false }, { 0x00, false }, { 0x00, false }, { 0x00, false },	//TEST DWORD PTR DS:[EDI+2C],2
+		{ 0x0F, true }, { 0x85, true }, { 0xA4, false }, { 0x46, false }, { 0x04, false }, { 0x00, false },						//JNZ d3d9.7221C52B
+		{ 0xC6, true }, { 0x45, false }, { 0xFC, false }, { 0x01, false },														//MOV BYTE PTR SS:[EBP-4],1
+		{ 0x8B, true }, { 0x87, false }, { 0x8C, false }, { 0x2C, false }, { 0x00, false }, { 0x00, false },					//MOV EAX,DWORD PTR DS:[EDI+2C8C]
+		{ 0xA8, true }, { 0x01, true },																							//TEST AL,1
+		{ 0x0F, true }, { 0x84, true }, { 0x77, false }, { 0x46, false }, { 0x04, false }, { 0x00, false },						//JE d3d9.7221C510
+		{ 0xF6, true }, { 0x87, false }, { 0x88, false }, { 0x2C, false }, { 0x00, false }, { 0x00, false }, { 0x04, false },	//TEST BYTE PTR DS:[EDI+2C88],4
+		{ 0x0F, true }, { 0x85, true }, { 0x9F, false }, { 0x46, false }, { 0x04, false }, { 0x00, false },						//JNZ d3d9.7221C545
+		{ 0x83, true }, { 0xE0, false }, { 0xFE, false },																		//AND EAX,FFFFFFFE
+		{ 0x89, true }, { 0x87, false }, { 0x8C, false }, { 0x2C, false }, { 0x00, false }, { 0x00, false },					//MOV DWORD PTR DS:[EDI+2C8C],EAX
+		{ 0x8B, true }, { 0xBF, false }, { 0x98, false }, { 0x2C, false }, { 0x00, false }, { 0x00, false },					//MOV EDI,DWORD PTR DS:[EDI+2C98]
+		{ 0x89, true }, { 0xB7, false }, { 0xC0, false }, { 0x00, false }, { 0x00, false }, { 0x00, false },					//MOV DWORD PTR DS:[EDI+C0],ESI
+		{ 0x8B, true }, { 0x07, false },																						//MOV EAX,DWORD PTR DS:[EDI]
+		{ 0x56, true },																											//PUSH ESI
+		{ 0x8B, true }, { 0x70, false }, { 0x4C, false },																		//MOV ESI,DWORD PTR DS:[EAX+4C]
+		{ 0x8B, true }, { 0xCE, true },																							//MOV ECX,ESI
+		{ 0xFF, true }, { 0x15, false }, { 0x74, false }, { 0xF6, false }, { 0x2C, false }, { 0x72, false },					//CALL DWORD PTR DS:[722CF674]             ; d3d9.721E86C0
+		{ 0x8B, true }, { 0xCF, true },																							//MOV ECX,EDI
+		{ 0xFF, true }, { 0xD6, true },																							//CALL ESI
+		{ 0x8B, true }, { 0x4D, false }, { 0x08, false },																		//MOV ECX,DWORD PTR SS:[EBP+8]
+		{ 0x8B, true }, { 0x41, false }, { 0x3C, false },																		//MOV EAX,DWORD PTR DS:[ECX+3C]
+		{ 0xFF, true }, { 0x40, false }, { 0x08, false },																		//INC DWORD PTR DS:[EAX+8]
+		{ 0x83, true }, { 0x4D, false }, { 0xFC, false }, { 0xFF, false },														//OR DWORD PTR SS:[EBP-4],FFFFFFFF
+		{ 0x83, true }, { 0x7B, false }, { 0x18, false }, { 0x00, false },														//CMP DWORD PTR DS:[EBX+18],0
+		{ 0x75, true }, { 0x13, false },																						//JNZ SHORT d3d9.721D7EF3
+		{ 0x33, true }, { 0xC0, true },																							//XOR EAX,EAX
+		{ 0xE8, true }, { 0xEC, false }, { 0xC0, false }, { 0x01, false }, { 0x00, false },										//CALL d3d9.721F3FD3
+		{ 0xC2, true }, { 0x04, true }, { 0x00, true },																			//RETN 4
+	};
+
+	/*std::vector<SearchableByte> FunctionSignature =
+	{
 		{ 0x8B, true }, { 0xFF, true },																							//MOV EDI,EDI
 		{ 0x55, true },																											//PUSH EBP
 		{ 0x8B, true }, { 0xEC, true },																							//MOV EBP,ESP
@@ -265,7 +310,7 @@ LPVOID ProgramInterfacer::_FindFunctionLocation(LPCVOID StartAddress)
 		{ 0x8B, true }, { 0xE5, true },																							//MOV ESP,EBP
 		{ 0x5D, true },																											//POP EBP
 		{ 0xC2, true }, { 0x14, true }, { 0x00, true }																			//RETN 14
-	};
+	};*/
 
 	std::vector<uint8_t> BufferSliceCopy(FunctionSignature.size());
 
